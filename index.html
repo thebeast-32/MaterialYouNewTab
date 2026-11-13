@@ -39,6 +39,8 @@
     <script defer src="scripts/ai-tools.js"></script>
     <script defer src="scripts/bookmarks.js"></script>
     <script defer src="scripts/todo-list.js"></script>
+    <script defer src="scripts/calendar-ical.js"></script>
+    <script defer src="scripts/calendar.js"></script>
     <script defer src="scripts/google-apps.js"></script>
     <script defer src="scripts/voice-search.js"></script>
     <script defer src="scripts/backup-restore.js"></script>
@@ -108,6 +110,68 @@
         <ul class="todolist" id="todoullist">
         </ul>
     </div>
+
+    <!-- --------------------- Calendar Setup Starting --------------------- -->
+    <!-- Calendar Icon -->
+    <button type="button" class="calendarCont dot-icon" id="calendarButton" aria-label="Open calendar"
+        aria-expanded="false" aria-controls="calendarPanel">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="4" />
+            <path d="M3 9.5h18M8 3v4M16 3v4" />
+            <text id="calendarIconDay" x="12" y="18.2" text-anchor="middle" font-size="8.5" font-weight="600"
+                fill="currentColor" stroke="none"></text>
+        </svg>
+        <span class="calendar-upcoming-dot" id="calendarUpcomingDot" hidden></span>
+        <span class="tooltip-text" id="calendarHover">Calendar</span>
+    </button>
+
+    <!-- Calendar Panel -->
+    <section id="calendarPanel" class="calendar-panel" aria-labelledby="calendarHeading" tabindex="-1" hidden>
+        <div class="calendar-header">
+            <h2 id="calendarHeading">Calendar</h2>
+            <div class="calendar-header-actions">
+                <div class="calendar-sync-chip" id="calendarSyncChip" role="status">
+                    <span class="calendar-sync-dot"></span>
+                    <span id="calendarSyncText"></span>
+                </div>
+                <button type="button" class="calendar-manage" id="calendarManage" aria-label="Manage calendars" hidden>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 7h10M18 7h2M4 17h2M10 17h10" />
+                        <circle cx="16" cy="7" r="2" />
+                        <circle cx="8" cy="17" r="2" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="calendar-content" id="calendarContent">
+            <div class="calendar-tabs" role="tablist">
+                <button type="button" role="tab" id="calendarTabDay" data-view="day"
+                    aria-controls="calendarBody">Day</button>
+                <button type="button" role="tab" id="calendarTabWeek" data-view="week"
+                    aria-controls="calendarBody">Week</button>
+                <button type="button" role="tab" id="calendarTabMonth" data-view="month"
+                    aria-controls="calendarBody">Month</button>
+            </div>
+
+            <div class="calendar-body" id="calendarBody" role="tabpanel"></div>
+        </div>
+
+        <div class="calendar-setup" id="calendarSetup" hidden>
+            <p class="calendar-message" id="calendarFeedHint">Add one iCal link (.ics or webcal) per calendar. It works with
+                Google Calendar, Outlook, Apple Calendar, school timetables and more: look for iCal, ICS or Subscribe in the
+                calendar's sharing or export settings.</p>
+            <form class="calendar-feed-form" id="calendarFeedForm" novalidate>
+                <input id="calendarFeedInput" type="text" autocomplete="off" spellcheck="false">
+                <button type="submit" class="calendar-open" id="calendarFeedAdd">Add</button>
+            </form>
+            <p class="calendar-message" id="calendarFeedError" role="alert" hidden></p>
+            <ul class="calendar-feed-list" id="calendarFeedList"></ul>
+            <button type="button" class="calendar-new-event" id="calendarFeedDone" hidden>Done</button>
+        </div>
+    </section>
 
     <!-- --------------------- Bookmark System --------------------- -->
     <div style="display: none;">
