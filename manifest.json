@@ -10,7 +10,9 @@
 		"https://duckduckgo.com/ac/?q=*",
 		"https://search.brave.com/api/suggest?q=*",
 		"https://*.wikipedia.org/w/api.php?action=opensearch&search=*",
-		"https://*/*"
+		"https://*/*",
+		"http://localhost/*",
+		"http://127.0.0.1/*"
 	],
 	"icons": {
 		"16": "favicon/icon16.png",

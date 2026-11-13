@@ -166,10 +166,14 @@
     }
 
     // ------------------------------ iCal feeds ------------------------------
+    // Plain http is only allowed for this computer, e.g. a calendar server running locally
+    const LOCAL_HOSTS = ["localhost", "127.0.0.1", "[::1]"];
+
     function normalizeFeedUrl(text) {
         try {
             const url = new URL(text.trim().replace(/^webcal:/i, "https:"));
-            return url.protocol === "https:" ? url : null;
+            const isLocal = url.protocol === "http:" && LOCAL_HOSTS.includes(url.hostname);
+            return url.protocol === "https:" || isLocal ? url : null;
         } catch {
             return null;
         }
@@ -179,7 +183,8 @@
     function requestFeedAccess(url) {
         if (typeof chrome === "undefined" || !chrome.permissions?.request) return Promise.resolve(true);
         return new Promise((resolve) => {
-            chrome.permissions.request({ origins: [`${url.origin}/*`] }, resolve);
+            // Without the port, since browser match patterns cover every port of a host
+            chrome.permissions.request({ origins: [`${url.protocol}//${url.hostname}/*`] }, resolve);
         });
     }
 
