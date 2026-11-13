@@ -11,6 +11,9 @@ document.getElementById("backupBtn").addEventListener("click", backupData);
 document.getElementById("restoreBtn").addEventListener("click", () => document.getElementById("fileInput").click());
 document.getElementById("fileInput").addEventListener("change", validateAndRestoreData);
 
+// Calendar links work like passwords, so they never go into a backup file
+const backupExcludedKeys = ["calendarFeeds", "calendarCache"];
+
 // Backup data from localStorage and IndexedDB
 async function backupData() {
     try {
@@ -18,7 +21,7 @@ async function backupData() {
 
         // Backup localStorage
         for (let key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
+            if (localStorage.hasOwnProperty(key) && !backupExcludedKeys.includes(key)) {
                 backup.localStorage[key] = localStorage.getItem(key);
             }
         }
@@ -152,8 +155,10 @@ async function restoreIndexedDB(data) {
 
 // Restore data for both localStorage and IndexedDB
 async function restoreData(backup) {
-    // Clear localStorage before restoring
+    // Clear localStorage before restoring, keeping calendar links since backups omit them
+    const calendarFeeds = localStorage.getItem("calendarFeeds");
     localStorage.clear();
+    if (calendarFeeds !== null) localStorage.setItem("calendarFeeds", calendarFeeds);
 
     // Restore localStorage from backup
     if (backup.localStorage) {
