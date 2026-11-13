@@ -155,8 +155,13 @@
     }
 
     function rebuildEvents() {
-        const lists = state.feeds.map((feed) => state.feedEvents[feed.id]).filter(Boolean);
-        state.events = lists.length ? mergeEvents(lists) : null;
+        const hasLoaded = state.feeds.some((feed) => state.feedEvents[feed.id]);
+        // Hidden calendars keep syncing but stay out of every view
+        const lists = state.feeds
+            .filter((feed) => !feed.hidden)
+            .map((feed) => state.feedEvents[feed.id])
+            .filter(Boolean);
+        state.events = hasLoaded ? mergeEvents(lists) : null;
         state.rangeEvents.clear();
     }
 
@@ -247,7 +252,7 @@
         if (!parsedCalendars.size) return null;
 
         const lists = state.feeds
-            .filter((feed) => parsedCalendars.has(feed.id))
+            .filter((feed) => parsedCalendars.has(feed.id) && !feed.hidden)
             .map((feed) => expandFeed(feed, parsedCalendars.get(feed.id), from, to));
         state.rangeEvents.set(key, mergeEvents(lists));
         return state.rangeEvents.get(key);
@@ -740,6 +745,7 @@
 
         feedList.replaceChildren(...state.feeds.map((feed) => {
             const item = createElement("li", "calendar-feed");
+            item.classList.toggle("is-hidden", Boolean(feed.hidden));
             const isMenuOpen = state.colorMenuFeedId === feed.id;
             const colorButton = createElement("button", "calendar-feed-color");
             colorButton.type = "button";
@@ -779,6 +785,19 @@
                 text.append(createElement("span", "calendar-event-time", t("calendarFeedBroken")));
             }
 
+            const visibility = createElement("button", "calendar-feed-edit");
+            visibility.type = "button";
+            visibility.dataset.visibilityId = feed.id;
+            visibility.setAttribute("aria-label", `${t(feed.hidden ? "calendarFeedShow" : "calendarFeedHide")}: ${feed.name}`);
+            visibility.innerHTML = feed.hidden ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6A17.4 17.4 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+            visibility.addEventListener("click", () => {
+                feed.hidden = !feed.hidden;
+                saveFeeds();
+                rebuildEvents();
+                renderFeedList();
+                feedList.querySelector(`[data-visibility-id="${feed.id}"]`).focus();
+            });
+
             const edit = createElement("button", "calendar-feed-edit");
             edit.type = "button";
             edit.setAttribute("aria-label", `${t("calendarFeedRename")}: ${feed.name}`);
@@ -793,7 +812,7 @@
             remove.setAttribute("aria-label", `${t("calendarFeedRemove")}: ${feed.name}`);
             remove.addEventListener("click", () => removeFeed(feed));
 
-            item.append(colorButton, text, edit, remove);
+            item.append(colorButton, text, visibility, edit, remove);
             if (isMenuOpen) item.append(createColorMenu(feed));
             return item;
         }));

@@ -59,6 +59,8 @@ const en = {
     "calendarFeedDone": "Done",
     "calendarFeedRemove": "Remove calendar",
     "calendarFeedRename": "Rename calendar",
+    "calendarFeedHide": "Hide calendar",
+    "calendarFeedShow": "Show calendar",
     "calendarFeedColor": "Calendar colour",
     "calendarFeedBroken": "Couldn't update this calendar",
     "calendarFeedInvalid": "Enter a valid https or webcal link.",

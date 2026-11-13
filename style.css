@@ -1686,6 +1686,11 @@ button.calendar-day.is-today {
 	background: var(--calendar-row);
 }
 
+.calendar-feed.is-hidden .calendar-feed-color,
+.calendar-feed.is-hidden .calendar-feed-name {
+	opacity: 0.45;
+}
+
 /* Reads as plain text until hovered or edited */
 .calendar-feed-name {
 	width: 100%;
