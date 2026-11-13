@@ -810,7 +810,19 @@
             const remove = createElement("button", "calendar-feed-remove", "×");
             remove.type = "button";
             remove.setAttribute("aria-label", `${t("calendarFeedRemove")}: ${feed.name}`);
-            remove.addEventListener("click", () => removeFeed(feed));
+            remove.dataset.removeId = feed.id;
+            remove.addEventListener("click", async () => {
+                const isConfirmed = await confirmPrompt(
+                    t("calendarFeedRemoveConfirm", { name: feed.name }),
+                    t("calendarFeedRemoveOk"),
+                    translations[currentLanguage]?.cancelText || translations["en"].cancelText
+                );
+                if (isConfirmed) {
+                    removeFeed(feed);
+                } else {
+                    feedList.querySelector(`[data-remove-id="${feed.id}"]`)?.focus();
+                }
+            });
 
             item.append(colorButton, text, visibility, edit, remove);
             if (isMenuOpen) item.append(createColorMenu(feed));
@@ -849,6 +861,8 @@
 
     // ------------------------------ Panel behaviour ------------------------------
     const isOpen = () => !panel.hidden;
+    // The extension's shared confirm dialog lives outside the panel (see alert-modal.js)
+    const isDialogOpen = () => document.getElementById("prompt-modal-container")?.style.display === "flex";
 
     function openPanel() {
         panel.hidden = false;
@@ -901,14 +915,15 @@
     // Runs in the capture phase so widgets that stop propagation still close the panel.
     // composedPath is used because clicked elements may be replaced when the body re-renders.
     document.addEventListener("click", (event) => {
-        if (!isOpen()) return;
+        if (!isOpen() || isDialogOpen()) return;
         const path = event.composedPath();
         if (path.includes(panel) || path.includes(button)) return;
         closePanel(document.activeElement === document.body || panel.contains(document.activeElement));
     }, true);
 
     document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape" || !isOpen()) return;
+        // While a dialog is open, Escape belongs to the dialog
+        if (event.key !== "Escape" || !isOpen() || isDialogOpen()) return;
         // Escape steps back out of an event's details before it closes the panel
         if (state.detail) {
             closeDetails();

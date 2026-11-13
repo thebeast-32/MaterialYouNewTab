@@ -58,6 +58,8 @@ const en = {
     "calendarFeedAdd": "Add",
     "calendarFeedDone": "Done",
     "calendarFeedRemove": "Remove calendar",
+    "calendarFeedRemoveConfirm": "Remove \"{name}\"? Its events will no longer show here. You can add it again later with its link.",
+    "calendarFeedRemoveOk": "Remove",
     "calendarFeedRename": "Rename calendar",
     "calendarFeedHide": "Hide calendar",
     "calendarFeedShow": "Show calendar",
