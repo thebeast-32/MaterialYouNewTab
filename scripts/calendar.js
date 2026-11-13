@@ -719,7 +719,25 @@
         return menu;
     }
 
+    function renameFeed(feed, name) {
+        const newName = name.trim();
+        if (newName && newName !== feed.name) {
+            feed.name = newName;
+            saveFeeds();
+            state.feedEvents[feed.id]?.forEach((event) => {
+                event.calendarName = newName;
+            });
+            rebuildEvents();
+            saveCache();
+        }
+        // Also puts back the old name when the field was left empty
+        renderFeedList();
+    }
+
     function renderFeedList() {
+        // A refresh finishing mid-rename would otherwise wipe what is being typed
+        if (document.activeElement?.classList.contains("calendar-feed-name")) return;
+
         feedList.replaceChildren(...state.feeds.map((feed) => {
             const item = createElement("li", "calendar-feed");
             const isMenuOpen = state.colorMenuFeedId === feed.id;
@@ -735,18 +753,47 @@
                 feedList.querySelector(`[data-feed-id="${feed.id}"]`).focus();
             });
 
+            const nameInput = createElement("input", "calendar-feed-name");
+            nameInput.type = "text";
+            nameInput.value = feed.name;
+            nameInput.maxLength = 60;
+            nameInput.autocomplete = "off";
+            nameInput.spellcheck = false;
+            nameInput.setAttribute("aria-label", `${t("calendarFeedRename")}: ${feed.name}`);
+            nameInput.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    nameInput.blur();
+                } else if (event.key === "Escape") {
+                    // Cancel the rename without also closing the panel
+                    event.stopPropagation();
+                    nameInput.value = feed.name;
+                    nameInput.blur();
+                }
+            });
+            nameInput.addEventListener("change", () => renameFeed(feed, nameInput.value));
+
             const text = createElement("span", "calendar-event-text");
-            text.append(createElement("span", "calendar-event-title", feed.name));
+            text.append(nameInput);
             if (state.failedFeeds.has(feed.id)) {
                 text.append(createElement("span", "calendar-event-time", t("calendarFeedBroken")));
             }
+
+            const edit = createElement("button", "calendar-feed-edit");
+            edit.type = "button";
+            edit.setAttribute("aria-label", `${t("calendarFeedRename")}: ${feed.name}`);
+            edit.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+            edit.addEventListener("click", () => {
+                nameInput.focus();
+                nameInput.select();
+            });
 
             const remove = createElement("button", "calendar-feed-remove", "×");
             remove.type = "button";
             remove.setAttribute("aria-label", `${t("calendarFeedRemove")}: ${feed.name}`);
             remove.addEventListener("click", () => removeFeed(feed));
 
-            item.append(colorButton, text, remove);
+            item.append(colorButton, text, edit, remove);
             if (isMenuOpen) item.append(createColorMenu(feed));
             return item;
         }));
